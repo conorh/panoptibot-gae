@@ -7,20 +7,20 @@ class XMPPHandler(webapp.RequestHandler):
   def post(self):
     message = xmpp.Message(self.request.POST)
     reply = self.parse_command(message.body, message.sender)
-    if True:
+    if reply:
       message.reply(reply)
     else:
       message.reply("No command")
 
   def parse_command(self, message, sender):
-    reply = "unknown command"
+    reply = None
     match = re.match(r"^(\/.*?)(?:\s|$)(.*)", message)
     
     # if the message starts with a / and has the format '/command option'
-    if len(match.groups()) >= 1:
+    if match:
       command = match.group(0)
       if command == "/add":
-        reply = "add"
+        reply = "/add"
       elif command == "/remove":
 	      reply = "/remove"
       elif command == "/help":
