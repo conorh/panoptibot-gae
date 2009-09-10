@@ -42,6 +42,13 @@ class XMPPHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication([('/_ah/xmpp/message/chat/', XMPPHandler)], debug=True)	
 
+#message =
+#<html>
+#  <body>
+#    <strong>#{from.nick}:</strong> message.gsub
+#  </body>
+#</html>
+
 def main():
   run_wsgi_app(application)
 
