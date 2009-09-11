@@ -1,4 +1,4 @@
-== Panoptibot ==
+== Panoptibot For Google App Engine ==
 
 This is a simple Google App Engine XMPP chat bot application. It duplicates the functionality in my Panoptibot project. I wrote this version to learn a little Python and to learn about Google App Engine.
 
