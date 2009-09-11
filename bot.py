@@ -72,9 +72,14 @@ class XMPPHandler(webapp.RequestHandler):
         send_invite(jid)
         reply = "Sent invitation"
       elif command == "/remove":
-        reply = "Command not implemented yet"
+        user = ChatUser.gql("WHERE nick = :1", match.group(2)).get()
+        if user != None:
+          user.delete()
+          reply = "Removed user"
+        else:
+          reply = "User not found"
       elif command == "/help":
-        reply = "commands are /hist, /nick [new nick name], /who, /timezone"
+        reply = "commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick]"
       elif command == "/h" or command == "/hist" or command == "/history":
         history = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
         reply = ""
