@@ -37,11 +37,7 @@ class XMPPHandler(webapp.RequestHandler):
       from_user.last_online_at = from_user.created_at = datetime.datetime.now()
       from_user.put()
     
-    reply = self.parse_command(message.body, from_user)
-    
-    if reply:
-      message.reply(reply)
-    else:
+    if not self.parse_command(message, from_user):
       all_users = db.GqlQuery("SELECT * FROM ChatUser")
       jids = []
       for user in all_users:
@@ -65,7 +61,8 @@ class XMPPHandler(webapp.RequestHandler):
 
   def parse_command(self, message, from_user):
     reply = None
-    match = re.match(r"(\/\w+)(?:\s|$)(.*)", message)
+    
+    match = re.match(r"(\/\w+)(?:\s|$)(.*)", message.body)
     
     # if the message starts with a / and has the format '/command option'
     if match:
@@ -79,16 +76,15 @@ class XMPPHandler(webapp.RequestHandler):
       elif command == "/help":
         reply = "commands are /hist, /nick [new nick name], /who, /timezone"
       elif command == "/h" or command == "/hist" or command == "/history":
-        messages = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
+        history = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
         reply = ""
         utc = tz_helper.timezone('UTC')
         if from_user.timezone != None:
           new_zone = tz_helper.timezone(from_user.timezone)
         else:
           new_zone = tz_helper.timezone('US/Eastern')
-        for message in messages:
-          if message.nick != None and message.body != None:
-            reply += message.created_at.replace(tzinfo=utc).astimezone(new_zone).strftime("%I:%M%p %Z") + " " + message.nick + ": " + message.body + "\n"
+        for hist_message in history:
+          reply += hist_message.created_at.replace(tzinfo=utc).astimezone(new_zone).strftime("%I:%M%p %Z") + " " + hist_message.nick + ": " + hist_message.body + "\n"
       elif command == "/n" or command == "/nick" or command == "/nickname":
         from_user.nick = match.group(2)
         from_user.put()
@@ -121,9 +117,10 @@ class XMPPHandler(webapp.RequestHandler):
         reply = "Unknown command"
     
     if reply != None:
-      reply = escape(reply)
-    
-    return reply
+      message.reply(escape(reply))
+      return True
+    else:
+      return False
 
 application = webapp.WSGIApplication([('/_ah/xmpp/message/chat/', XMPPHandler)], debug=True)
 
