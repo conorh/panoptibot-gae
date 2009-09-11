@@ -1,24 +1,27 @@
 from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.api import memcache
 
 from google.appengine.ext import db
 from google.appengine.api import users
 
 import re
 import datetime
+
+import tz_helper
 from xml.sax.saxutils import escape
 
 class ChatUser(db.Model):
   jid = db.StringProperty(required=True)
   nick = db.StringProperty(required=True)
   status = db.StringProperty(required=True)
+  timezone = db.StringProperty()
   created_at = db.DateTimeProperty()
-  last_online_at = db.DateTimeProperty()
 
 class MessageLog(db.Model):
   from_jid = db.StringProperty()
-  from_full_jid = db.StringProperty()
+  nick = db.StringProperty()
   body = db.StringProperty()
   created_at = db.DateTimeProperty()
 
@@ -50,7 +53,7 @@ class XMPPHandler(webapp.RequestHandler):
           user.status = 'offline'
         user.put()
       
-      MessageLog(from_jid = stripped_jid, from_full_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
+      MessageLog(nick = from_user.nick, from_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
       
       reply = "<body>" + escape(from_user.nick) + ": " + escape(message.body) + "</body>"
       reply += "<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>"
@@ -59,7 +62,7 @@ class XMPPHandler(webapp.RequestHandler):
       
       if len(jids) > 0:
         xmpp.send_message(jids, reply, None, xmpp.MESSAGE_TYPE_CHAT, True)
-  
+
   def parse_command(self, message, from_user):
     reply = None
     match = re.match(r"(\/\w+)(?:\s|$)(.*)", message)
@@ -74,9 +77,18 @@ class XMPPHandler(webapp.RequestHandler):
       elif command == "/remove":
         reply = "Command not implemented yet"
       elif command == "/help":
-        reply = "commands are /hist [1,1..100], /nick [new nick name], /who, /quiet, /resume, /search [string]"
+        reply = "commands are /hist, /nick [new nick name], /who, /timezone"
       elif command == "/h" or command == "/hist" or command == "/history":
-        reply = "Command not implemented yet"
+        messages = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
+        reply = ""
+        utc = tz_helper.timezone('UTC')
+        if from_user.timezone != None:
+          new_zone = tz_helper.timezone(from_user.timezone)
+        else:
+          new_zone = tz_helper.timezone('US/Eastern')
+        for message in messages:
+          if message.nick != None and message.body != None:
+            reply += message.created_at.replace(tzinfo=utc).astimezone(new_zone).strftime("%I:%M%p %Z") + " " + message.nick + ": " + message.body + "\n"
       elif command == "/n" or command == "/nick" or command == "/nickname":
         from_user.nick = match.group(2)
         from_user.put()
@@ -97,8 +109,19 @@ class XMPPHandler(webapp.RequestHandler):
         reply = "Command not implemented yet"
       elif command == "/s" or command == "/search":
         reply = "Command not implemented yet"
+      elif command == "/timezone":
+        new_zone = tz_helper.timezone(match.group(2))
+        if new_zone:
+          from_user.timezone = new_zone.zone
+          from_user.put()
+          reply = "timezone set to " + from_user.timezone
+        else:
+          reply = "Unknown timezone"
       else:
         reply = "Unknown command"
+    
+    if reply != None:
+      reply = escape(reply)
     
     return reply
 
