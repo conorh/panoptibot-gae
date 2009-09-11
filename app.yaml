@@ -4,7 +4,7 @@ runtime: python
 api_version: 1
 
 handlers:
-- url: /.*
+- url: /_ah/xmpp/message/chat/
   script: bot.py
 
 inbound_services:

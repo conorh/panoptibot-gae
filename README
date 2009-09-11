@@ -1,0 +1,7 @@
+== Panoptibot ==
+
+This is a simple Google App Engine XMPP chat bot application. It duplicates the functionality in my Panoptibot project. I wrote this version to learn a little Python and to learn about Google App Engine.
+
+If you are deploying your own version remember to change the app name in app.yml.
+
+To send messages to the bot send messages to appname@appspot.com. The bot will automatically accept all friend requests.
