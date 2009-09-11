@@ -36,6 +36,8 @@ class XMPPHandler(webapp.RequestHandler):
       from_user = ChatUser(jid = stripped_jid, nick = stripped_jid, status = 'online')
       from_user.last_online_at = from_user.created_at = datetime.datetime.now()
       from_user.put()
+      message.reply("Welcome to Panoptibot, komrade!")
+      message.reply("commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick]")
     
     if not self.parse_command(message, from_user):
       all_users = db.GqlQuery("SELECT * FROM ChatUser")
