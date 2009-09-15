@@ -71,8 +71,8 @@ class XMPPHandler(webapp.RequestHandler):
       command = match.group(1)
       if command == "/add":
         jid = match.group(2)
-        send_invite(jid)
-        reply = "Sent invitation"
+        xmpp.send_invite(jid)
+        reply = "Sent invitation to " + jid
       elif command == "/remove":
         user = ChatUser.gql("WHERE nick = :1", match.group(2)).get()
         if user != None:
