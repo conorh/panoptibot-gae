@@ -104,7 +104,7 @@ class XMPPHandler(webapp.RequestHandler):
             user.status = 'online'
           else:
             user.status = 'offline'
-          reply += user.nick + ": " + user.status + "\n"
+          reply += " " + user.nick + ": " + user.status + " (" + user.jid + ")\n"
           user.put()
       elif command == "/q" or command == "/quiet":
         reply = "Command not implemented yet"
