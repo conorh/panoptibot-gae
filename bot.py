@@ -45,7 +45,7 @@ class XMPPHandler(webapp.RequestHandler):
       reply += "<strong>" + escape(from_user.nick) + ":</strong> " + escape(message.body)
       reply += "</body></html>"
       
-      jids = [user.jid for user in all_users if user.status == 'online']
+      jids = [user.jid for user in all_users if user.status == 'online' and user.jid != from_user.jid]
       if len(jids) > 0:
         xmpp.send_message(jids, reply, None, xmpp.MESSAGE_TYPE_CHAT, True)
   
