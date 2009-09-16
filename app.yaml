@@ -6,6 +6,10 @@ api_version: 1
 handlers:
 - url: /_ah/xmpp/message/chat/
   script: bot.py
+  
+- url: /
+  script: main.py
+  login: required
 
 inbound_services:
 - xmpp_message

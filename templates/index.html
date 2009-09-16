@@ -1,0 +1,14 @@
+<html>
+</html>
+<body>
+  <table width="100%">
+    {% for message in chat_log %}
+      <tr>
+        <td style="padding-right: 10px;"><b>{{ message.created_at.strftime("%I:%M%p %Z") }}</b></td>
+        <td style="padding-right: 10px;"><b>{{ message.nick }}</b></td>
+        <td>{{ message.body }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
