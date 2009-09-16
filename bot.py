@@ -2,7 +2,6 @@ from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import memcache
-
 from google.appengine.ext import db
 from google.appengine.api import users
 
@@ -114,8 +113,9 @@ class XMPPHandler(webapp.RequestHandler):
       from_user.put()
       reply = "You will start receiving messages from the bot again."
     elif command == "/s" or command == "/search":
-      messages = MessageLog.search(match.group(2))
-      reply = self.output_history(messages, from_user)
+      reply = "Not implemented yet"
+      #messages = MessageLog.search(match.group(2))
+      #reply = self.output_history(messages, from_user)
     elif command == "/timezone":
       new_zone = tz_helper.timezone(match.group(2))
       if new_zone:
