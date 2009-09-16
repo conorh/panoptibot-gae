@@ -1,7 +1,19 @@
 == Panoptibot For Google App Engine ==
 
-This is a simple Google App Engine XMPP chat bot application. It duplicates the functionality in my Panoptibot project. I wrote this version to learn a little Python and to learn about Google App Engine.
+This is a simple Google App Engine XMPP chat bot application. Like an IRC channel, but over XMPP. Each message you send to the bot will be echoed to each of the participants. It duplicates the functionality in my Ruby Panoptibot project. I wrote this version to learn a little Python and to learn about Google App Engine.
 
-If you are deploying your own version remember to change the app name in app.yml.
+To deploy your own bot create a google app engine application, clone this repository, change the application name in app.yaml, and deploy. That should take all of five minutes :)
 
 To send messages to the bot send messages to appname@appspot.com. The bot will automatically accept all friend requests.
+
+The bot has a web interface at http://appname.appspot.com. It currently displays the message log. The bot needs to know about you before you can see the log, so make sure you have sent a message to the bot with the email you are trying to use to access the web interface.
+
+The bot currently supports these commands:
+/who - list all users registered with the bot and their status
+/hist - show the last 20 messages posted to the bot
+/add [email] - sends the user an invite request
+/remove [nick] - remove a user from the bot, they will no longer receive messages
+/nick [nick] - set your nickname that is displayed with each message
+/quiet - stop receiving messages from the bot
+/resume - resume receiving messages from the bot
+/timezone - set your timezone to show chat log history using your timezone, ex. /timezone EST, /timezone GMT /timezone Europe/Helsinki
