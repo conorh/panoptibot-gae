@@ -9,7 +9,7 @@ from google.appengine.api import users
 import re
 import datetime
 
-import tz_helper
+from pytz import tz_helper
 from xml.sax.saxutils import escape
 
 class ChatUser(db.Model):

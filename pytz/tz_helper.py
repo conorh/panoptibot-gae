@@ -15,7 +15,7 @@ def caching_tz_opener(name):
     cache_key="zoneinfo:%s:%s" % (pytz.OLSON_VERSION,name )
     zonedata=memcache.get(cache_key)
     if zonedata is None:
-        zoneinfo = zipfile.ZipFile(os.path.join(os.path.dirname(__file__), 'zoneinfo.zip'))
+        zoneinfo = zipfile.ZipFile(os.path.join(os.path.dirname(__file__), 'pytz','zoneinfo.zip'))
         zonedata=zoneinfo.read(os.path.join('zoneinfo', *name_parts).replace('\\','/'))
         memcache.add(cache_key, zonedata)
         logging.info("cached timezone: %s" % cache_key)
