@@ -5,6 +5,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.api import users
 
+import os
 import re
 import datetime
 
@@ -112,6 +113,8 @@ class XMPPHandler(webapp.RequestHandler):
       #reply = self.output_history(messages, from_user)
     elif command == "/timezone":
       new_zone = tz_helper.timezone(match.group(2))
+    elif command == "/ver":
+      reply = "0.1"
     else:
       reply = "Unknown command"
 
