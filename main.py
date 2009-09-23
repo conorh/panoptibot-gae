@@ -18,15 +18,6 @@ class MainPage(webapp.RequestHandler):
     else:
       chat_log = bot.MessageLog.all().order('-created_at').fetch(500)
       
-      if chat_user.timezone != None:
-        new_zone = tz_helper.timezone(chat_user.timezone)
-      else:
-        new_zone = tz_helper.timezone('US/Eastern')
-      
-      utc = tz_helper.timezone('UTC')
-      for message in chat_log:
-        message.created_at = message.created_at.replace(tzinfo=utc).astimezone(new_zone)
-        
       template_values = { 'chat_log': chat_log }
       path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
       self.response.out.write(template.render(path, template_values))

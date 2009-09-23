@@ -4,7 +4,7 @@
   <table width="100%">
     {% for message in chat_log %}
       <tr>
-        <td style="padding-right: 10px;"><b>{{ message.created_at|date:"h:i A T" }}</b></td>
+        <td style="padding-right: 10px;"><b>{{ message.created_at|date:"h:i A" }} UTC</b></td>
         <td style="padding-right: 10px;"><b>{{ message.nick }}</b></td>
         <td>{{ message.body }}</td>
       </tr>

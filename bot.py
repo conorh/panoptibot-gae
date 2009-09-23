@@ -8,7 +8,6 @@ from google.appengine.api import users
 import re
 import datetime
 
-from pytz import tz_helper
 from xml.sax.saxutils import escape
 
 class ChatUser(db.Model):
@@ -62,13 +61,8 @@ class XMPPHandler(webapp.RequestHandler):
 
   def output_history(self, messages, from_user):
     reply = ""
-    utc = tz_helper.timezone('UTC')
-    if from_user.timezone != None:
-      new_zone = tz_helper.timezone(from_user.timezone)
-    else:
-      new_zone = tz_helper.timezone('US/Eastern')
     for m in messages:
-      reply += m.created_at.replace(tzinfo=utc).astimezone(new_zone).strftime("%I:%M%p %Z") + " " + m.nick + ": " + m.body + "\n"  
+      reply += m.created_at.strftime("%I:%M%p UTC") + " " + m.nick + ": " + m.body + "\n"  
     return reply
 
   def parse_command(self, message, from_user):
@@ -118,12 +112,6 @@ class XMPPHandler(webapp.RequestHandler):
       #reply = self.output_history(messages, from_user)
     elif command == "/timezone":
       new_zone = tz_helper.timezone(match.group(2))
-      if new_zone:
-        from_user.timezone = new_zone.zone
-        from_user.put()
-        reply = "timezone set to " + from_user.timezone
-      else:
-        reply = "Unknown timezone - example timezones - US/Eastern, EST, PST"
     else:
       reply = "Unknown command"
 
