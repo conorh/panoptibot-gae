@@ -21,7 +21,7 @@ class ChatUser(db.Model):
 class MessageLog(db.Model):
   from_jid = db.StringProperty()
   nick = db.StringProperty()
-  body = db.StringProperty()
+  body = db.TextProperty()
   created_at = db.DateTimeProperty()
 
 class XMPPHandler(webapp.RequestHandler):
