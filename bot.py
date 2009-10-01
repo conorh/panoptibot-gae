@@ -34,21 +34,10 @@ class XMPPHandler(webapp.RequestHandler):
     if from_user == None:
       from_user = ChatUser(jid = stripped_jid, nick = stripped_jid, status = 'online', created_at = datetime.datetime.now()).put()
       message.reply("Welcome to Panoptibot, komrade!")
-      message.reply("commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick]")
+      message.reply("commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /img [url]")
 
-    if not self.parse_command(message, from_user):
-      all_users = self.update_users_status()
-      MessageLog(nick = from_user.nick, from_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
-      
-      reply = "<body>" + escape(from_user.nick) + ": " + escape(message.body) + "</body>"
-      reply += "<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>"
-      reply += "<strong>" + escape(from_user.nick) + ":</strong> " + escape(message.body)
-      reply += "</body></html>"
-      
-      jids = [user.jid for user in all_users if user.status == 'online' and user.jid != from_user.jid]
-      if len(jids) > 0:
-        xmpp.send_message(jids, reply, None, xmpp.MESSAGE_TYPE_CHAT, True)
-  
+    self.process_message(message, from_user)
+
   def update_users_status(self):
     all_users = ChatUser.all().fetch(100)
     for user in all_users:
@@ -65,15 +54,41 @@ class XMPPHandler(webapp.RequestHandler):
     for m in messages:
       reply += m.created_at.strftime("%I:%M%p UTC") + " " + m.nick + ": " + m.body + "\n"  
     return reply
+  
+  def html_message(self, from_user, body, escape_message=True):
+    if(escape_message):
+      body = escape(body)
+    
+    reply = "<body>" + escape(from_user.nick) + ": " + body + "</body>"
+    reply += "<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>"
+    reply += "<strong>" + escape(from_user.nick) + ":</strong> " + body
+    reply += "</body></html>"
+    return reply
 
-  def parse_command(self, message, from_user):
+  def send_to_all(self, from_user, message, escape_message=True, html_message=True):
+    all_users = self.update_users_status()
+    jids = [user.jid for user in all_users if user.status == 'online' and user.jid != from_user.jid]
+    if len(jids) > 0:
+      if html_message:
+        reply = self.html_message(from_user, message, escape_message)
+      elif escape_message:
+        reply = escape(message)
+      else:
+        reply = message
+
+      xmpp.send_message(jids, reply, None, xmpp.MESSAGE_TYPE_CHAT, html_message)
+
+  def process_message(self, message, from_user):
     reply = None
+
+    # message starts with a / and has the format '/command option'
     match = re.match(r"(\/\w+)(?:\s|$)(.*)", message.body)
 
-    # if the message starts with a / and has the format '/command option'
     if not match:
-      return False
-      
+      MessageLog(nick = from_user.nick, from_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
+      self.send_to_all(from_user, message.body)
+      return
+
     command = match.group(1)
     if command == "/add":
       jid = match.group(2)
@@ -87,10 +102,13 @@ class XMPPHandler(webapp.RequestHandler):
       else:
         reply = "User not found"
     elif command == "/help":
-      reply = "commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /quiet /resume"
+      reply = "commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /quiet /resume /img [url]"
     elif command == "/h" or command == "/hist" or command == "/history":
       history = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
       reply = self.output_history(history, from_user)
+    elif command == "/img":
+      MessageLog(nick = from_user.nick, from_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
+      self.send_to_all(from_user, "<img src='" + match.group(2) + "'/>", False)
     elif command == "/n" or command == "/nick" or command == "/nickname":
       from_user.nick = match.group(2)
       from_user.put()
@@ -119,7 +137,6 @@ class XMPPHandler(webapp.RequestHandler):
       reply = "Unknown command"
 
     message.reply(escape(reply))
-    return True
 
 application = webapp.WSGIApplication([('/_ah/xmpp/message/chat/', XMPPHandler)], debug=True)
 
