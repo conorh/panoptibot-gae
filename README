@@ -25,4 +25,3 @@ The bot currently supports these commands:
 /nick [nick] - set your nickname that is displayed with each message
 /quiet - stop receiving messages from the bot
 /resume - resume receiving messages from the bot
-/timezone - set your timezone to show chat log history using your timezone, ex. /timezone EST, /timezone GMT /timezone Europe/Helsinki
