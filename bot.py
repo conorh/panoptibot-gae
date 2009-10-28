@@ -28,11 +28,12 @@ class XMPPHandler(webapp.RequestHandler):
   def post(self):
     message = xmpp.Message(self.request.POST)
     stripped_jid = message.sender.partition('/')[0]
+    short_nick = stripped_jid.split('@')[0]
     
     # Is this a user that we know about? If not then add this user to our user list
     from_user = db.GqlQuery("SELECT * FROM ChatUser WHERE jid = :1", stripped_jid).get()
     if from_user == None:
-      from_user = ChatUser(jid = stripped_jid, nick = stripped_jid, status = 'online', created_at = datetime.datetime.now()).put()
+      from_user = ChatUser(jid = stripped_jid, nick = short_nick, status = 'online', created_at = datetime.datetime.now()).put()
       message.reply("Welcome to Panoptibot, komrade!")
       message.reply("commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /img [url]")
       message.reply("Source code at: http://github.com/conorh/panoptibot-gae/")
@@ -105,7 +106,7 @@ class XMPPHandler(webapp.RequestHandler):
       else:
         reply = "User not found"
     elif command == "/help":
-      reply = "commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /quiet /resume /img [url]"
+      reply = "commands are /who /hist, /quiet /resume, /nick [new nick name], /who, /add [jabber id], /remove [nick] /img [url]"
     elif command == "/h" or command == "/hist" or command == "/history":
       history = MessageLog.gql("ORDER BY created_at DESC").fetch(20)
       reply = self.output_history(history, from_user)
@@ -113,6 +114,7 @@ class XMPPHandler(webapp.RequestHandler):
       MessageLog(nick = from_user.nick, from_jid = message.sender, body = message.body, created_at = datetime.datetime.now()).put()
       self.send_to_all(from_user, "<img src='" + match.group(2) + "'/>", False)
     elif command == "/n" or command == "/nick" or command == "/nickname":
+      self.send_to_all(from_user, "Changed nickname to" + match.group(2))
       from_user.nick = match.group(2)
       from_user.put()
       reply = "nickname set to " + from_user.nick
