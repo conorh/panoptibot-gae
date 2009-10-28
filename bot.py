@@ -35,7 +35,10 @@ class XMPPHandler(webapp.RequestHandler):
       from_user = ChatUser(jid = stripped_jid, nick = stripped_jid, status = 'online', created_at = datetime.datetime.now()).put()
       message.reply("Welcome to Panoptibot, komrade!")
       message.reply("commands are /hist, /nick [new nick name], /who, /timezone, /add [jabber id], /remove [nick] /img [url]")
-
+      message.reply("Source code at: http://github.com/conorh/panoptibot-gae/")
+      message.reply("")
+      message.reply("Remeber to set your nickname with /nick")
+      
     self.process_message(message, from_user)
 
   def update_users_status(self):

@@ -7,7 +7,6 @@ import os
 import datetime
 
 import bot
-from pytz import tz_helper
 
 class MainPage(webapp.RequestHandler):
   def get(self):
